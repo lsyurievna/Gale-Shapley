@@ -140,6 +140,8 @@ def algorithm(dict, h_ranking_students, s_ranking_hospitals, n):
         else:
            return iterations
 
+########## MAIN ###########
+########## TEST HERE #########
 
 if __name__ == "__main__" :
 
