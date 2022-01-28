@@ -64,65 +64,87 @@ class G:
 
 #### GALE - SHAPELEY ALGORITHM FUNCTION #######
 
-def algorithm(dict, h_ranking_students, s_ranking_hospitals, iterations, hospital, n):
+def algorithm(dict, h_ranking_students, s_ranking_hospitals, n):
+
+    iterations = 0
+    hospital = 0
+    h = str(hospital)
+    s = None
+   
+    # if no student is assigned to a hospital and hospital hasn't proposed to this specific student yet
+    while (s == None and len(G.getValueByKey(h_ranking_students, h)) != 0):
+        # If there are students that are not matched (there is a value of None in dict)
         if G.isInDictValues(dict, None):
-            #print(dict)
-            #print(h_ranking_students)
-            #print(s_ranking_hospitals)
-            h = str(hospital) #0
-            s = dict.get(h)
-            # if no student is assigned to a hospital and hospital hasn't proposed to this specific student yet
-            if (s == None and len(G.getValueByKey(h_ranking_students, h)) != 0):
+            # If for a specific chosen hospital there is no matching yet (we only count rounds when a hospital
+            # proposes, if a hospital is already matched, we should skip it)
+            if dict.get(h) == None:
                 #assign student to the first student on the hospital ranking list
                 s = G.getFirstStudent(h_ranking_students, h)
                 # if the student has no offers yet, accep this offer
                 if G.isInDictValues(dict,s) == False:
-                    #match student
                     dict[h] = s
-                #if student prefers proposed h to matched h
-                #current hospital = G.getKeyByValue(dict,s)
-                #proposed hospital = h
-                #if current hospital index < proposed hospital index
+                    
+                    #Increase the number of iteratons and go to the next hospital
+                    if (hospital == n-1):
+                        hospital = 0
+                    else: hospital = hospital+1
+                    h = str(hospital)
+                    s = None
+                    iterations = iterations + 1
+                    print (iterations, ") ", dict)
+
+
+                #if student prefers proposed hospital to matched hospital
+                #(if current hospital index < proposed hospital index)
                 elif G.getHospitalRank(s_ranking_hospitals, G.getKeyByValue(dict,s), s) > G.getHospitalRank(s_ranking_hospitals, h, s):
-                    #print (G.getHospitalRank(s_ranking_hospitals, G.getKeyByValue(dict,s), s))
-                    #print (G.getHospitalRank(s_ranking_hospitals, h, s))
                     #cancel the student's previous arrangement
                     dict[G.getKeyByValue(dict,s)] = None
                     #and accept the new offer
                     dict[h] = s
-                else:
-                    iterations = iterations + 1
-                    print(dict)
-                    #print(dict)
+
+                    #Increase the number of iteratons and go to the next hospital
                     if (hospital == n-1):
                         hospital = 0
                     else: hospital = hospital+1
-                    return algorithm(dict, h_ranking_students, s_ranking_hospitals, iterations,hospital,n)
+                    h = str(hospital)
+                    s = None
+                    iterations = iterations + 1
+                    print (iterations, ") ", dict)
 
+                #A hospital proposes so we count this as an iteration
+                #A student refuses however since they are happy with their
+                #current matching, so we just return to the beginning of the algorithm
+                else: 
 
+                    #Increase the number of iteratons and go to the next hospital
+                    if (hospital == n-1):
+                        hospital = 0
+                    else: hospital = hospital+1
+                    h = str(hospital)
+                    s = None
+                    iterations = iterations + 1
+                    print (iterations, ") ", dict)
+
+            #The hospital is already matched : no increase in the number of iterations,
+            #go to next hospital
+            else: 
                 
-                iterations = iterations + 1 #increment iterations
-                print(dict)
-                #print(dict)
-                #increment hospital index and run again
+                #Increase the number of iteratons and go to the next hospital
                 if (hospital == n-1):
                     hospital = 0
                 else: hospital = hospital+1
-                return algorithm(dict, h_ranking_students, s_ranking_hospitals, iterations,hospital,n)
+                h = str(hospital)
+                s = None
 
-            else:
-            #increment hospital index and run algorithm again
-                if (hospital == n-1):
-                        hospital = 0
-                else: hospital = hospital+1
-                return algorithm(dict, h_ranking_students, s_ranking_hospitals, iterations,hospital,n)
+        #When everyone has been matched (no None values in the stable matchings dictionary)  
+        else:
+           return iterations
 
-        else: return iterations   
 
 if __name__ == "__main__" :
 
-    #You can test my Gale-Shapley!
-    #Just enter any data in the following form:
+    #You can test my Gale-Shapley by specifying your own input file!
+    #Just enter your data in the following format:
 
     #Leave this dictionary as it is, 
     #stable matchings will be stored in this dictionary
@@ -131,26 +153,33 @@ if __name__ == "__main__" :
         "1": None,
         "2": None}
      
-    #hospital rankings of students 
-    #hospitals are keys, and arrays with student rankings are values 
+    #This is hospitals' rankings of students 
+    # Enter hospitals are keys, and arrays with student rankings as values
     h_ranking_students = {
-        "0": ["0", "1", "2"],
+        "0": ["0", "1", "2"], #for example, hospital "0" prefers students in the following order: "0", "1", "2"
         "1": ["1", "0", "2"],
         "2": ["1", "0", "2"],
     } 
-    #student rankings of hospitals
-    #hospitals are values, and arrays with student rankings are key
+    #This is students' rankings of hospitals
+    #Enter students as keys and arrays with hospital rankings as values
     s_ranking_hospitals = {
-        "0": ["2", "1", "0"],
+        "0": ["2", "1", "0"], #for example, hospital "0" prefers students in the following order: "2", "1", "0"
         "1": ["2", "1", "0"],
         "2": ["2", "1", "0"]
     } 
-
+    
+    #Leave these as they are
     iterations = 0
     hospital = 0
+    
+    #Let the computer know how many students and hospitals (n) you are working with
     n = 3
-    print(algorithm(dict, h_ranking_students, s_ranking_hospitals, iterations,hospital,n))
-
+    
+    #The number of GS iterations will be printed along with 
+    # the state of stable matchings dictionary after each step
+    # Thank you for testing my GS!
+    print("Number of GS iterations: ", algorithm(dict, h_ranking_students, s_ranking_hospitals, n))
+    print("Thank you for testing my GS!")
 
         
         
