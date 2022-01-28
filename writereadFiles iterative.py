@@ -89,62 +89,104 @@ def makeGSinput(n, pref, lists, rank_dict):
         index = int(pref[i])
         rank_dict[str(i)] = lists[index].copy()
 
+###### METHODS FOR GALE-SHAPLEY IMPLEMENTATION ######
 
+# Note that there was absolutely no need for a class here, functions would have
+# worked just fine, however I was rusty on making classes, so I did this 
+#just for the sake of doing it. It works - it works.
+#This class contains some useful functions that are used while implementing 
+#Gale-Shapley algorithm
+#
 class G:
     
+    #Gets dictionary key if a value is provided
+    # @dict the dictionary of interest
+    # @ind value
+    # @return key 
+    #
     def getKeyByValue(dict, ind):
-        return(list(dict.keys())[list(dict.values()).index(ind)])  # Prints george
+        return(list(dict.keys())[list(dict.values()).index(ind)])
     
+    #Gets dictionary value if a key is provided
+    # @dict the dictionary of interest
+    # @key key
+    # @return value
+    #
     def getValueByKey(dict, key):
         return dict.get(key)
     
+    #Returns an array with student rankings, given a hospital (a key)
+    # @dict the dictionary of interest
+    # @h hospital of interest
+    # @return array with student rankings
     def getRankingsOfStudents(dict, h):
         return(dict.get(h))
     
+    #Gets the first element in the student ranking array 
+    # @dict the dictionary of interest
+    # @h hospital of interest
+    # @retrun the first student in the raninking
+    #
     def getFirstStudent(dict, h):
-
         return dict.get(h).pop(0)
     
+    #Return hospital rank in the ranking made by studetns
+    # @dict the dictionary where students are keys and arrays of hospital rankings are values
+    # @s student of interest (key)
+    # @h hospital of interest
+    #
     def getHospitalRank(dict, h, s):
         return dict.get(s).index(h)
     
+    #Goes through the dictionary and determines if there is a specific value in it
+    # @dict dictionary of interest
+    # @s value to look for
+    # @return True if there is a specified value, False otherwise
+    #
     def isInDictValues(dict, s):
         return (s in dict.values())
 
+    #Goes throught the dictionary and determines if there is a specific key 
+    # @dict dictionary of interest
+    # @k key to look for
+    # @return True if there is a key k, False otherwise
+    #
     def isInDictKeys(dict, k):
         return (k in dict.keys())
 
 
+######## GALE - SHAPELEY ALGORITHM    #######
 
-#### GALE - SHAPELEY ALGORITHM FUNCTION #######
-
+#Da great Gale-Shapley (GS) creates stable matches for a list of hiring
+#and med-school students looking for employment, based on the preference lists provided 
+#by both parties. Number of students and number of hospitals is assumed to be the same.
+# @dict the dictionary where the stable matches are stored, get updated after every iteration
+# @h_ranking_studetns a dictionary with hospitals as keys and arrays with student rankings as values
+# @s_ranking_hospitals a dictionary whith students as keys and arrays with hospital rankings as values
+# @n number of students and hospitals
+# @iterations how many rounds GS goes through before producing a stable matching
+#
 def algorithm(dict, h_ranking_students, s_ranking_hospitals, n):
 
     iterations = 0
     hospital = 0
-    h = str(hospital) #0
+    h = str(hospital)
     s = None
-    #if G.isInDictValues(dict, None):
-        #print(dict)
-        #print(h_ranking_students)
-        #print(s_ranking_hospitals)
-            
-            # if no student is assigned to a hospital and hospital hasn't proposed to this specific student yet
+   
+    # if no student is assigned to a hospital and hospital hasn't proposed to this specific student yet
     while (s == None and len(G.getValueByKey(h_ranking_students, h)) != 0):
+        # If there are students that are not matched (there is a value of None in dict)
         if G.isInDictValues(dict, None):
+            # If for a specific chosen hospital there is no matching yet (we only count rounds when a hospital
+            # proposes, if a hospital is already matched, we should skip it)
             if dict.get(h) == None:
                 #assign student to the first student on the hospital ranking list
                 s = G.getFirstStudent(h_ranking_students, h)
                 # if the student has no offers yet, accep this offer
                 if G.isInDictValues(dict,s) == False:
-                    #match student
                     dict[h] = s
-
-
-                    # print("if")
-                    # print(h)
                     
-
+                    #Increase the number of iteratons and go to the next hospital
                     if (hospital == n-1):
                         hospital = 0
                     else: hospital = hospital+1
@@ -152,25 +194,16 @@ def algorithm(dict, h_ranking_students, s_ranking_hospitals, n):
                     s = None
                     iterations = iterations + 1
 
-                    # print(iterations)
-                    # print(dict)
 
-                #if student prefers proposed h to matched h
-                #current hospital = G.getKeyByValue(dict,s)
-                #proposed hospital = h
-                #if current hospital index < proposed hospital index
+                #if student prefers proposed hospital to matched hospital
+                #(if current hospital index < proposed hospital index)
                 elif G.getHospitalRank(s_ranking_hospitals, G.getKeyByValue(dict,s), s) > G.getHospitalRank(s_ranking_hospitals, h, s):
-                    #print (G.getHospitalRank(s_ranking_hospitals, G.getKeyByValue(dict,s), s))
-                    #print (G.getHospitalRank(s_ranking_hospitals, h, s))
                     #cancel the student's previous arrangement
                     dict[G.getKeyByValue(dict,s)] = None
                     #and accept the new offer
                     dict[h] = s
-                    
-                    # print("eflif")
-                    # print(h)
-                    
 
+                    #Increase the number of iteratons and go to the next hospital
                     if (hospital == n-1):
                         hospital = 0
                     else: hospital = hospital+1
@@ -178,15 +211,12 @@ def algorithm(dict, h_ranking_students, s_ranking_hospitals, n):
                     s = None
                     iterations = iterations + 1
 
-                    
-                    # print(iterations)
-                    # print(dict)
-
+                #A hospital proposes so we count this as an iteration
+                #A student refuses however since they are happy with their
+                #current matching, so we just return to the beginning of the algorithm
                 else: 
 
-                    # print("else")
-                    # print(h)
-
+                    #Increase the number of iteratons and go to the next hospital
                     if (hospital == n-1):
                         hospital = 0
                     else: hospital = hospital+1
@@ -194,33 +224,32 @@ def algorithm(dict, h_ranking_students, s_ranking_hospitals, n):
                     s = None
                     iterations = iterations + 1
 
-                    # print(iterations)
-                    # print(dict)
+            #The hospital is already matched : no increase in the number of iterations,
+            #go to next hospital
             else: 
                 
-                # print("else2")
-                # print(h)
-
+                #Increase the number of iteratons and go to the next hospital
                 if (hospital == n-1):
                     hospital = 0
                 else: hospital = hospital+1
                 h = str(hospital)
                 s = None
-                #iterations = iterations + 1
 
-                # print(iterations)
-                # print(dict)
-
-                
+        #When everyone has been matched (no None values in the stable matchings dictionary)  
         else:
            return iterations 
 
+####### CREATE FILES FUNTION ######
 
-                
-                
-        
+#The function creates a given number of 
+# files in a specific format (refer to README file)  
+# @amt number of files to be produced   
+# k number of possible preference lists
+# n number of students and hospitals
+#
 def writeFiles(amt, k, n):
-    n_this_time = n
+
+    n_this_time = n #n can differ
     k = int(k)
     n = int(n)
 
@@ -251,18 +280,18 @@ def writeFiles(amt, k, n):
         randomizer(n,k,f)
         
         f.close()
-#MAIN
+
+####### MAIN BODY ##########
 
 if __name__ == "__main__" :
-    
-    total_rounds = 0
-    #### WRITING FILE #######
+
+    #Producing amt number of input files
+    total_rounds = 0 #counter for the total nubmer of GS iterations
     k, n = userPrompt() 
-    amt = 10
+    amt = int(input("How many input files do you want to make? Number of files to be made and processed: "))
     writeFiles(amt,k,n)
 
-    
-
+    #Processing the input files using GS algorithm
     for i in range (amt):
 
         dict = {} #stable matchings will be stored in this dictionary
@@ -299,25 +328,21 @@ if __name__ == "__main__" :
             h_pref.pop()
             makeGSinput(n, h_pref, h_lists, h_ranking_students)
             
-            
             line = f.readline()
             s_pref = line.split(" ")
             s_pref.pop()
             makeGSinput(n, s_pref.copy(), s_lists, s_ranking_hospitals) 
 
-            #print(s_ranking_hospitals)
-            #print(h_ranking_students)
-
-
-            #iterations = 0
             hospital = 0
             rounds = (algorithm(dict, h_ranking_students, s_ranking_hospitals, n))
-            print (rounds)
-
+            #print (rounds)
             total_rounds = total_rounds + rounds
-    print(total_rounds)
+
+    #print(total_rounds)
     average = total_rounds / amt
-    print(average)
+    print()
+    print("Gale-Shapley algorithm ran ", amt, " times.")
+    print("The average number of GS iterations for the specified k and n values: ", average)
 
 
 
